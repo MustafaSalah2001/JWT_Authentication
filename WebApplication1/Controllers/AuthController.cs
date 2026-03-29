@@ -1,60 +1,42 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication1.DTO;
 using WebApplication1.Models;
+using WebApplication1.Services;
 
 namespace WebApplication1.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(IConfiguration configuration): ControllerBase
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
     {
-        public static User user = new();
-        [HttpPost("register")]
-        public IActionResult Register([FromBody] UserDto userDto)
+        private readonly IAusthServices _austhServices;
+
+        public AuthController(IAusthServices austhServices)
         {
-            var hashedPassword = new PasswordHasher<User>().HashPassword(user, userDto.Password);
-            user.Username = userDto.Username;
-            user.PasswordHash = hashedPassword;
+            _austhServices = austhServices;
+        }
+
+        [HttpPost("register")]
+        public async Task<ActionResult<User>> Register(UserDto userDto)
+        {
+            var user = await _austhServices.RegistuerAsync(userDto);
+            if (user == null)
+            {
+                return BadRequest("User already exists.");
+            }
 
             return Ok(user);
         }
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] UserDto userDto)
-        {
-            if (user.Username != userDto.Username)
-            {
-                return BadRequest("User not found.");
-            }
-            if (new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, userDto.Password) == PasswordVerificationResult.Failed)
-            {
-                return BadRequest("Incorrect password.");
-            }
-            string token =CreateToken (user);
-            return Ok(token);
-        }
-        private string CreateToken(User user)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Username)
-            };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetValue<string>("AppSettings:token")));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
-            var tokenDescriptor= new JwtSecurityToken(
-                issuer: configuration.GetValue<string>("AppSetting:Issuer"),
-                audience: configuration.GetValue<string>("AppSetting:Audience"),
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds
 
-                );
-            return new  JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+        [HttpPost("login")]
+        public async Task<ActionResult<string>> Login([FromBody] UserDto userDto)
+        {
+            var token = await _austhServices.LoginAsync(userDto);
+            if (token == null)
+            {
+                return BadRequest("Invalid username or password.");
+            }
+            return Ok(token);
         }
     }
 }
