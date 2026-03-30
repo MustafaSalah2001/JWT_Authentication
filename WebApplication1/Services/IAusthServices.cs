@@ -3,10 +3,10 @@ using WebApplication1.Models;
 
 namespace WebApplication1.Services
 {
-    public interface IAusthServices
+    public interface IAuthServices
     {
-        Task<User?> RegistuerAsync(UserDto requst);
-        Task<string?> LoginAsync(UserDto requst);
-
+        Task<User?> RegisterAsync(UserDto request);
+        Task<TokenResponeDto?> LoginAsync(UserDto request);
+        Task<TokenResponeDto?> RefreshTokenAsync(RefreshTokenRequsetDto request);
     }
 }
