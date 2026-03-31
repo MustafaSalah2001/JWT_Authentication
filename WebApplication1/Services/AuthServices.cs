@@ -22,7 +22,6 @@ namespace WebApplication1.Services
             this.configuration = configuration;
         }
 
-        // تسجيل المستخدم
         public async Task<User?> RegisterAsync(UserDto request)
         {
             if (await context.Users.AnyAsync(u => u.Username == request.Username))
@@ -32,7 +31,7 @@ namespace WebApplication1.Services
             {
                 Username = request.Username,
                 PasswordHash = new PasswordHasher<User>().HashPassword(null, request.Password),
-                Role = "User" // الدور الافتراضي
+                Role = "User" 
             };
 
             context.Users.Add(user);
@@ -41,7 +40,6 @@ namespace WebApplication1.Services
             return user;
         }
 
-        // تسجيل الدخول
         public async Task<TokenResponeDto?> LoginAsync(UserDto request)
         {
             var user = await context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
