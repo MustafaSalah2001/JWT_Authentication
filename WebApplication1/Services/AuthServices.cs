@@ -51,7 +51,7 @@ namespace WebApplication1.Services
             return await CreateTokenResponse(user);
         }
 
-        // تجديد التوكن
+       
         public async Task<TokenResponeDto?> RefreshTokenAsync(RefreshTokenRequsetDto request)
         {
             var user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken);
@@ -60,7 +60,7 @@ namespace WebApplication1.Services
             return await CreateTokenResponse(user);
         }
 
-        // التحقق من صلاحية Refresh Token
+    
         private async Task<User?> ValidateRefreshTokenAsync(Guid userId, string refreshToken)
         {
             var user = await context.Users.FindAsync(userId);
@@ -70,7 +70,6 @@ namespace WebApplication1.Services
             return user;
         }
 
-        // توليد Access Token و Refresh Token
         private async Task<TokenResponeDto> CreateTokenResponse(User user)
         {
             var accessToken = CreateAccessToken(user);
@@ -83,7 +82,6 @@ namespace WebApplication1.Services
             };
         }
 
-        // توليد Access Token
         private string CreateAccessToken(User user)
         {
             var claims = new List<Claim>
@@ -107,7 +105,7 @@ namespace WebApplication1.Services
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }
 
-        // توليد Refresh Token
+
         private string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
@@ -115,9 +113,7 @@ namespace WebApplication1.Services
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
-
-        // حفظ Refresh Token في قاعدة البيانات
-        private async Task<string> GenerateAndSaveRefreshToken(User user)
+       private async Task<string> GenerateAndSaveRefreshToken(User user)
         {
             var refreshToken = GenerateRefreshToken();
             user.RefreshToken = refreshToken;
